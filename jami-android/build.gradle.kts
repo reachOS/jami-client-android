@@ -1,5 +1,6 @@
 plugins {
     id("com.google.devtools.ksp") version "1.9.23-1.0.19" apply false
+    id("co.uzzu.dotenv.gradle") version "4.0.0"
 }
 
 buildscript {
