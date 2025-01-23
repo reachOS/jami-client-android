@@ -18,6 +18,14 @@ android {
     compileSdk = 34
     buildToolsVersion = "34.0.0"
     ndkVersion = "26.3.11579264"
+    signingConfigs {
+        create("release") {
+            storeFile = file("../keys/app.keystore")
+            storePassword = env.KEYSTORE_PASSWORD.value
+            keyPassword = env.KEYSTORE_PASSWORD.value
+            keyAlias = "app-release"
+        }
+    }
     defaultConfig {
         minSdk = 24
         targetSdk = 34
@@ -55,6 +63,7 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     buildFeatures {

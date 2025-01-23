@@ -33,3 +33,4 @@ tests/bin
 /libjamiclient/src/main/java/net/jami/daemon/*
 /build/
 **/google-services.json
+.env
