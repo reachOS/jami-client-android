@@ -47,4 +47,11 @@ interface IRemoteService {
     void rejectCall();
     Bitmap getCallerImage(String userId);
     void setProfileData(String peerId, @nullable String name, @nullable String imageUri, @nullable String fileType);
+    void registerEventListener(IEventListener listener);
+    void unregisterEventListener(IEventListener listener);
+    interface IEventListener {
+        void onEventReceived(String name, in @nullable Map<String, String> data);
+    }
+    Map<String, String> getAccountInfo(String account);
+    String getPushToken();
 }
