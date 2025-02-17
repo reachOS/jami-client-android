@@ -2,7 +2,7 @@ name: Build release artifact
 
 on:
   push:
-    branches: [ "main", "jami-builder" ]
+    branches: [ "master", "jami-builder" ]
     tags:
     - '*'
 
