@@ -135,14 +135,8 @@ jobs:
           [[ -d ~/.gradle ]] || mkdir ~/.gradle
           echo "jamiAppSigningKey=${{ secrets.KEYSTORE_PASSWORD }}" >> ~/.gradle/gradle.properties
 
-      - name: Get daemon submodule commit hash
-        id: jami_daemon_hash
-        run: |
-          commit=$(cd daemon && git rev-parse HEAD)
-          echo "commit=${commit}" >> $GITHUB_OUTPUT
-
       - name: Restore jami daemon if already built
-        id: jami-daemon-cache
+        id: jami-daemon-cache-2
         uses: actions/cache@v4
         with:
           path: |
@@ -152,7 +146,7 @@ jobs:
           key: ${{ runner.os }}-jami-daemon-${{ steps.jami_daemon_hash.outputs.commit }}
 
       - name: Build jami daemon (64 bit)
-        if: steps.jami-daemon-cache.outputs.cache-hit != 'true'
+        if: steps.jami-daemon-cache-2.outputs.cache-hit != 'true'
         run: |
           cd daemon
           [[ -d build ]] || mkdir build
@@ -164,12 +158,6 @@ jobs:
         run: |
           cd daemon/bin/jni
           PACKAGEDIR=jami-android/libjamiclient/src/main/java ./make-swig.sh
-
-      - name: Get jami commit hash
-        id: jami_hash
-        run: |
-          commit=$(git rev-parse HEAD)
-          echo "commit=${commit}" >> $GITHUB_OUTPUT
 
       - name: Restore jami if already built
         uses: actions/cache@v4
