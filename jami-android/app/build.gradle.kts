@@ -204,3 +204,11 @@ afterEvaluate {
     val cmakeTasks = tasks.matching { it.name.startsWith("buildCMake") }
     tasks.withType<KotlinCompile>().configureEach { dependsOn(cmakeTasks) }
 }
+
+tasks.register("writeAppVersion") {
+    doLast {
+        val versionCode = android.defaultConfig.versionCode
+        file("${buildDir}/version.txt").writeText("$versionCode")
+    }
+}
+
