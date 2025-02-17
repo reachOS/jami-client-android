@@ -1,7 +1,7 @@
 name: Build release artifact
 
 on:
-  pull-request:
+  pull_request:
     branches: [ "master" ]
   push:
     branches: [ "master", "jami-builder" ]
