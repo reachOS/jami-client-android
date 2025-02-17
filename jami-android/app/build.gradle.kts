@@ -1,4 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 val kotlin_version: String by rootProject.extra
 val hilt_version: String by rootProject.extra
@@ -24,6 +27,13 @@ android {
         // upstream version, patchlevel (last 3 digits)
         versionCode = 436004
         versionName = "20241126-01"
+        val release = System.getenv("RELEASE_VERSION")
+        if (release != null) {
+            val numeric = release.slice(1 until release.length).toInt() // chop off the v
+            versionCode = numeric
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            versionName = Instant.now().atZone(ZoneId.of("UTC")).format(formatter) + ".$release"
+        }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
@@ -204,11 +214,3 @@ afterEvaluate {
     val cmakeTasks = tasks.matching { it.name.startsWith("buildCMake") }
     tasks.withType<KotlinCompile>().configureEach { dependsOn(cmakeTasks) }
 }
-
-tasks.register("writeAppVersion") {
-    doLast {
-        val versionCode = android.defaultConfig.versionCode
-        file("${buildDir}/version.txt").writeText("$versionCode")
-    }
-}
-

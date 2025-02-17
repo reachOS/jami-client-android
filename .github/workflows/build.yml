@@ -76,21 +76,3 @@ jobs:
       - name: Build jami
         run: |
           cd jami-android && ./gradlew --no-daemon app:assembleWithUnifiedPushRelease -Parchs=armeabi-v7a,arm64-v8a
-
-      - name: Write jami version
-        run: |
-          cd jami-android && ./gradlew --no-daemon app:writeAppVersion
-
-      - name: Read jami version
-        id: jami_version
-        run: |
-          version=$(cat jami-android/app/build/version.txt)
-          echo "App version: $version"
-          echo "version=$version" >> $GITHUB_OUTPUT
-
-      - name: Upload jami
-        uses: actions/upload-artifact@v4
-        with:
-          name: jami-${{ steps.jami_version.outputs.version }}
-          if-no-files-found: error
-          path: jami-android/app/build/outputs/apk/withUnifiedPush/release/app-withUnifiedPush-release.apk
