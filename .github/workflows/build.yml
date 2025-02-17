@@ -172,7 +172,6 @@ jobs:
           echo "commit=${commit}" >> $GITHUB_OUTPUT
 
       - name: Restore jami if already built
-        id: jami-daemon-cache
         uses: actions/cache@v4
         with:
           path: |
