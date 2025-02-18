@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotlin_version: String by rootProject.extra
 val hilt_version: String by rootProject.extra
@@ -46,4 +47,10 @@ kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
     }
+}
+
+// Make sure the native build runs before the Kotlin/Java build
+afterEvaluate {
+    val cmakeTasks = tasks.matching { it.name.startsWith("buildCMake") }
+    tasks.withType<KotlinCompile>().configureEach { dependsOn(cmakeTasks) }
 }

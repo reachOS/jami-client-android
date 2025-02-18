@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -207,10 +206,4 @@ protobuf {
 if (buildFirebase) {
     println ("apply plugin $buildFirebase")
     apply(plugin = "com.google.gms.google-services")
-}
-
-// Make sure the native build runs before the Kotlin/Java build
-afterEvaluate {
-    val cmakeTasks = tasks.matching { it.name.startsWith("buildCMake") }
-    tasks.withType<KotlinCompile>().configureEach { dependsOn(cmakeTasks) }
 }
