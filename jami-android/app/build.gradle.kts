@@ -34,27 +34,6 @@ android {
             versionName = Instant.now().atZone(ZoneId.of("UTC")).format(formatter) + ".$release"
         }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                version = "3.22.1"
-                arguments += listOf(
-                    "-DANDROID_STL=c++_shared",
-                    "-DBUILD_CONTRIB=ON",
-                    "-DBUILD_EXTRA_TOOLS=OFF",
-                    "-DJAMI_TESTS=OFF",
-                    "-DBUILD_TESTING=OFF",
-                    "-DJAMI_JNI=ON",
-                    "-DJAMI_JNI_PACKAGEDIR="+rootProject.projectDir.resolve("libjamiclient/src/main/java"),
-                    "-DJAMI_DATADIR=/data/data/$namespace/files",
-                    "-DJAMI_NATPMP=Off"
-                )
-            }
-            ndk {
-                debugSymbolLevel = "FULL"
-                abiFilters += properties["archs"]?.toString()?.split(",") ?: listOf("arm64-v8a", "x86_64", "armeabi-v7a")
-                println ("Building for ABIs $abiFilters")
-            }
-        }
     }
     signingConfigs {
         create("config") {
@@ -98,12 +77,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
-    }
-    externalNativeBuild {
-        cmake {
-            path = file("../../daemon/CMakeLists.txt")
-            version = "3.22.1"
-        }
     }
 }
 

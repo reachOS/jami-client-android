@@ -1,14 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val kotlin_version: String by rootProject.extra
 val hilt_version: String by rootProject.extra
 val dokka_version: String by rootProject.extra
 
 plugins {
-    id("kotlin")
-    id("java")
     kotlin("kapt")
+    id("com.android.library")
+    kotlin("android")
 }
 
 dependencies {
@@ -38,6 +37,52 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 }
 
+android {
+    compileSdk = 34
+    buildToolsVersion = "34.0.0"
+    ndkVersion = "28.0.13004108"
+    namespace = "libjamiclient"
+
+    defaultConfig {
+        minSdk = 24
+        externalNativeBuild {
+            cmake {
+                version = "3.22.1"
+                arguments += listOf(
+                    "-DANDROID_STL=c++_shared",
+                    "-DBUILD_CONTRIB=ON",
+                    "-DBUILD_EXTRA_TOOLS=OFF",
+                    "-DJAMI_TESTS=OFF",
+                    "-DBUILD_TESTING=OFF",
+                    "-DJAMI_JNI=ON",
+                    "-DJAMI_JNI_PACKAGEDIR="+rootProject.projectDir.resolve("libjamiclient/src/main/java"),
+                    "-DJAMI_DATADIR=/data/data/$namespace/files",
+                    "-DJAMI_NATPMP=Off"
+                )
+            }
+            ndk {
+                debugSymbolLevel = "FULL"
+                abiFilters += properties["archs"]?.toString()?.split(",") ?: listOf("arm64-v8a", "x86_64", "armeabi-v7a")
+                println ("Building for ABIs $abiFilters")
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    externalNativeBuild {
+        cmake {
+            path = file("../../daemon/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
@@ -47,10 +92,4 @@ kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
     }
-}
-
-// Make sure the native build runs before the Kotlin/Java build
-afterEvaluate {
-    val cmakeTasks = tasks.matching { it.name.startsWith("buildCMake") }
-    tasks.withType<KotlinCompile>().configureEach { dependsOn(cmakeTasks) }
 }
