@@ -8,10 +8,6 @@ on:
 jobs:
   release:
     runs-on: ubuntu-latest
-
-  deployment:
-    needs: build
-    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
