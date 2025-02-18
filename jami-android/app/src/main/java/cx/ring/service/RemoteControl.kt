@@ -371,9 +371,9 @@ class RemoteControl : LifecycleService() {
         }
 
         override fun unregisterConnectionMonitor(monitor: IRemoteService.IConnectionMonitor?) {
-            hardwareService.mPreferenceService.isLogActive = false
             connectionMonitors[monitor]?.dispose()
             connectionMonitors.remove(monitor)
+            hardwareService.mPreferenceService.isLogActive = connectionMonitors.isNotEmpty()
         }
     }
 
