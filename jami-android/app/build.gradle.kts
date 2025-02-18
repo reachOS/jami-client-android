@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -25,7 +24,7 @@ android {
         minSdk = 24
         targetSdk = 34
         // upstream version, patchlevel (last 3 digits)
-        versionCode = 436004
+        versionCode = 436005
         versionName = "20241126-01"
         val release = System.getenv("RELEASE_VERSION")
         if (release != null) {
@@ -35,27 +34,6 @@ android {
             versionName = Instant.now().atZone(ZoneId.of("UTC")).format(formatter) + ".$release"
         }
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        externalNativeBuild {
-            cmake {
-                version = "3.22.1"
-                arguments += listOf(
-                    "-DANDROID_STL=c++_shared",
-                    "-DBUILD_CONTRIB=ON",
-                    "-DBUILD_EXTRA_TOOLS=OFF",
-                    "-DJAMI_TESTS=OFF",
-                    "-DBUILD_TESTING=OFF",
-                    "-DJAMI_JNI=ON",
-                    "-DJAMI_JNI_PACKAGEDIR="+rootProject.projectDir.resolve("libjamiclient/src/main/java"),
-                    "-DJAMI_DATADIR=/data/data/$namespace/files",
-                    "-DJAMI_NATPMP=Off"
-                )
-            }
-            ndk {
-                debugSymbolLevel = "FULL"
-                abiFilters += properties["archs"]?.toString()?.split(",") ?: listOf("arm64-v8a", "x86_64", "armeabi-v7a")
-                println ("Building for ABIs $abiFilters")
-            }
-        }
     }
     signingConfigs {
         create("config") {
@@ -99,12 +77,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "17"
-    }
-    externalNativeBuild {
-        cmake {
-            path = file("../../daemon/CMakeLists.txt")
-            version = "3.22.1"
-        }
     }
 }
 
@@ -207,10 +179,4 @@ protobuf {
 if (buildFirebase) {
     println ("apply plugin $buildFirebase")
     apply(plugin = "com.google.gms.google-services")
-}
-
-// Make sure the native build runs before the Kotlin/Java build
-afterEvaluate {
-    val cmakeTasks = tasks.matching { it.name.startsWith("buildCMake") }
-    tasks.withType<KotlinCompile>().configureEach { dependsOn(cmakeTasks) }
 }

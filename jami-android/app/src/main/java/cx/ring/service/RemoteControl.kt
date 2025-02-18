@@ -8,6 +8,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.IBinder
+import android.os.Looper
 import android.os.RemoteException
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -18,7 +19,10 @@ import cx.ring.fragments.CallFragment
 import cx.ring.tv.call.TVCallActivity
 import cx.ring.utils.ConversationPath
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import kotlinx.coroutines.Job
 import net.jami.daemon.JamiService
 import net.jami.model.Account
@@ -30,6 +34,7 @@ import net.jami.services.CallService
 import net.jami.services.ContactService
 import net.jami.services.DeviceRuntimeService
 import net.jami.services.EventService
+import net.jami.services.HardwareService
 import net.jami.services.NotificationService
 import net.jami.utils.Log
 import javax.inject.Inject
@@ -54,6 +59,9 @@ class RemoteControl : LifecycleService() {
 
     @Inject
     lateinit var deviceService: DeviceRuntimeService
+
+    @Inject
+    lateinit var hardwareService: HardwareService
 
     private val eventListeners = mutableMapOf<IRemoteService.IEventListener, Job>()
 
@@ -338,6 +346,35 @@ class RemoteControl : LifecycleService() {
         override fun getPushToken(): String {
             return deviceService.pushToken
         }
+
+        val compositeDisposable = CompositeDisposable()
+        val connectionMonitors = mutableMapOf<IRemoteService.IConnectionMonitor, Disposable>()
+
+        override fun registerConnectionMonitor(monitor: IRemoteService.IConnectionMonitor) {
+            hardwareService.mPreferenceService.isLogActive = true
+            compositeDisposable.add(hardwareService.startLogs()
+                .observeOn(Schedulers.io())
+                .subscribe({ messages: List<String> ->
+                    if (messages.isNotEmpty()) {
+                        monitor.onMessages(messages)
+                    }
+                }) { error: Throwable ->
+                    eventListeners.forEach({ (listener, _) ->
+                        listener.onEventReceived("ERROR", mapOf("message" to error.message))
+                    })
+                }
+                .apply {
+                    compositeDisposable.add(this)
+                    connectionMonitors[monitor] = this
+                }
+            )
+        }
+
+        override fun unregisterConnectionMonitor(monitor: IRemoteService.IConnectionMonitor?) {
+            connectionMonitors[monitor]?.dispose()
+            connectionMonitors.remove(monitor)
+            hardwareService.mPreferenceService.isLogActive = connectionMonitors.isNotEmpty()
+        }
     }
 
     override fun onBind(intent: Intent): IBinder {
@@ -354,6 +391,7 @@ class RemoteControl : LifecycleService() {
             }
         }
         compositeDisposable.add(disposable)
+        compositeDisposable.add(binder.compositeDisposable)
         return binder
     }
 }
