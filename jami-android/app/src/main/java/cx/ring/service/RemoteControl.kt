@@ -351,6 +351,7 @@ class RemoteControl : LifecycleService() {
         val connectionMonitors = mutableMapOf<IRemoteService.IConnectionMonitor, Disposable>()
 
         override fun registerConnectionMonitor(monitor: IRemoteService.IConnectionMonitor) {
+            hardwareService.mPreferenceService.isLogActive = true
             compositeDisposable.add(hardwareService.startLogs()
                 .observeOn(Schedulers.io())
                 .subscribe({ messages: List<String> ->
@@ -370,6 +371,7 @@ class RemoteControl : LifecycleService() {
         }
 
         override fun unregisterConnectionMonitor(monitor: IRemoteService.IConnectionMonitor?) {
+            hardwareService.mPreferenceService.isLogActive = false
             connectionMonitors[monitor]?.dispose()
             connectionMonitors.remove(monitor)
         }
