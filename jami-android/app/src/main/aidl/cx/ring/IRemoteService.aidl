@@ -54,4 +54,9 @@ interface IRemoteService {
     }
     Map<String, String> getAccountInfo(String account);
     String getPushToken();
+    interface IConnectionMonitor {
+        void onMessages(in List<String> line);
+    }
+    void registerConnectionMonitor(IConnectionMonitor monitor);
+    void unregisterConnectionMonitor(IConnectionMonitor monitor);
 }
