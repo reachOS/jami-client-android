@@ -45,19 +45,22 @@ android {
                     "-DJAMI_TESTS=OFF",
                     "-DBUILD_TESTING=OFF",
                     "-DJAMI_JNI=ON",
-                    "-DJAMI_JNI_PACKAGEDIR="+rootProject.projectDir.resolve("libjamiclient/src/main/java"),
+                    "-DJAMI_JNI_PACKAGEDIR=" + rootProject.projectDir.resolve("libjamiclient/src/main/java"),
                     "-DJAMI_DATADIR=/data/data/$namespace/files",
                     "-DJAMI_NATPMP=Off"
                 )
             }
             ndk {
                 debugSymbolLevel = "FULL"
-                abiFilters += properties["archs"]?.toString()?.split(",") ?: listOf("arm64-v8a", "x86_64", "armeabi-v7a")
-                println ("Building for ABIs $abiFilters")
+                abiFilters += properties["archs"]?.toString()?.split(",") ?: listOf(
+                    "armeabi-v7a"
+                )
+                println("Building for ABIs $abiFilters")
             }
+        }
     }
     signingConfigs {
-        create("config") {
+        create("familycards") {
             keyAlias = "app-release"
             storeFile = file("../app.keystore")
             storePassword = findProperty("jamiAppSigningKey") as? String?
@@ -68,11 +71,12 @@ android {
         debug {
             isDebuggable = true
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("familycards")
         }
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("config")
+            signingConfig = signingConfigs.getByName("familycards")
         }
     }
     buildFeatures {
@@ -108,7 +112,6 @@ android {
     externalNativeBuild {
         cmake {
             path = file("../../daemon/CMakeLists.txt")
-            version = "3.30.5"
         }
     }
 }
