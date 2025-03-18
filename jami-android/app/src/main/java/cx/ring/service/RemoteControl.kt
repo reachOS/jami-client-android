@@ -7,7 +7,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
-import android.os.DeadObjectException
 import android.os.IBinder
 import android.os.IInterface
 import android.os.RemoteCallbackList
@@ -24,7 +23,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.rxjava3.disposables.CompositeDisposable
 import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
-import kotlinx.coroutines.Job
 import net.jami.daemon.JamiService
 import net.jami.model.Account
 import net.jami.model.Contact
@@ -433,8 +431,6 @@ fun <T : IInterface> RemoteCallbackList<T>.sendtoAll(action: (T) -> Unit) {
     for (i in 0 until n) {
         try {
             action(getBroadcastItem(i))
-        } catch (e: DeadObjectException) {
-            Log.i("RemoteControl", "Dead object exception: ${e.message}")
         } catch (e: RemoteException) {
             Log.i("RemoteControl", "Remote exception: ${e.message}")
         }

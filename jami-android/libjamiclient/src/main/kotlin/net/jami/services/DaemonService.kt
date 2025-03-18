@@ -238,13 +238,13 @@ class DaemonService(
         }
 
         override fun incomingCall(accountId: String, callId: String, from: String) {
-            eventService.logEvent("incomingCall", mapOf("accountId" to accountId, "callId" to callId, "from" to from))
+            eventService.logEvent("incomingCall", mapOf("accountId" to accountId, "callId" to callId))
             // Should be kept while multi-stream is not enabled for Android by default
             mCallService.incomingCallWithMedia(accountId, callId, from, null)
         }
 
         override fun incomingCallWithMedia(accountId: String, callId: String, from: String, mediaList: VectMap) {
-            eventService.logEvent("incomingCallWithMedia", mapOf("accountId" to accountId, "callId" to callId, "from" to from, "mediaList" to mediaList.toMap().toString()))
+            eventService.logEvent("incomingCallWithMedia", mapOf("accountId" to accountId, "callId" to callId, "mediaList" to mediaList.toMap().toString()))
             mCallService.incomingCallWithMedia(accountId, callId, from, mediaList)
         }
 
@@ -272,7 +272,7 @@ class DaemonService(
         }
 
         override fun incomingMessage(accountId: String, callId: String, from: String, messages: StringMap) {
-            eventService.logEvent("incomingMessage", mapOf("accountId" to accountId, "callId" to callId, "from" to from))
+            eventService.logEvent("incomingMessage", mapOf("accountId" to accountId, "callId" to callId))
             if (messages.isEmpty()) return
             val jmessages: Map<String, String> = messages.toNativeFromUtf8()
             mExecutor.submit { mCallService.incomingMessage(accountId, callId, from, jmessages) }
@@ -314,12 +314,12 @@ class DaemonService(
         }
 
         override fun newBuddyNotification(accountId: String, buddyUri: String, status: Int, lineStatus: String) {
-            eventService.logEvent("newBuddyNotification", mapOf("accountId" to accountId, "buddyUri" to buddyUri, "status" to status.toString(), "lineStatus" to lineStatus))
+            eventService.logEvent("newBuddyNotification", mapOf("accountId" to accountId, "status" to status.toString(), "lineStatus" to lineStatus))
             mAccountService.getAccount(accountId)?.presenceUpdate(buddyUri, status)
         }
 
         override fun subscriptionStateChanged(accountId: String, buddyUri: String, state: Int) {
-            eventService.logEvent("subscriptionStateChanged", mapOf("accountId" to accountId, "buddyUri" to buddyUri, "state" to state.toString()))
+            eventService.logEvent("subscriptionStateChanged", mapOf("accountId" to accountId, "state" to state.toString()))
             Log.d(TAG, "subscriptionStateChanged: $accountId, $buddyUri, $state")
         }
     }
@@ -389,7 +389,7 @@ class DaemonService(
         }
 
         override fun conversationRequestReceived(accountId: String, conversationId: String, metadata: StringMap) {
-            eventService.logEvent("conversationRequestReceived", mapOf("accountId" to accountId, "conversationId" to conversationId, "metadata" to metadata.toString()))
+            eventService.logEvent("conversationRequestReceived", mapOf("accountId" to accountId, "conversationId" to conversationId))
             mAccountService.conversationRequestReceived(accountId, conversationId, metadata.toNativeFromUtf8())
         }
 
