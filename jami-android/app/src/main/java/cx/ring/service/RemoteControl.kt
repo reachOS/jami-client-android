@@ -7,6 +7,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
+import android.os.DeadObjectException
 import android.os.IBinder
 import android.os.RemoteException
 import androidx.annotation.RequiresApi
@@ -234,10 +235,12 @@ class RemoteControl : LifecycleService() {
         }
 
         override fun registerCallStateCallback(callback: IRemoteService.StateCallback) {
+            Log.d(tag, "Registering call state callback: $callback")
             callbacks.add(callback)
         }
 
         override fun unregisterCallStateCallback(callback: IRemoteService.StateCallback?) {
+            Log.d(tag, "Unregistering call state callback: $callback")
             callbacks.remove(callback)
         }
 
@@ -322,10 +325,14 @@ class RemoteControl : LifecycleService() {
         override fun registerEventListener(listener: IRemoteService.IEventListener) {
             Log.d(tag, "Registering event listener: $listener")
             val job = eventService.subscribeToEvents(lifecycleScope) {
-                listener.onEventReceived(
-                    it.name,
-                    it.data
-                )
+                try {
+                    listener.onEventReceived(
+                        it.name,
+                        it.data
+                    )
+                } catch (e: RemoteException) {
+                    unregisterEventListener(listener)
+                }
             }
             eventListeners[listener] = job
         }
@@ -354,7 +361,11 @@ class RemoteControl : LifecycleService() {
                 .observeOn(Schedulers.io())
                 .subscribe({ messages: List<String> ->
                     if (messages.isNotEmpty()) {
-                        monitor.onMessages(messages)
+                        try {
+                            monitor.onMessages(messages)
+                        } catch (e: RemoteException) {
+                            unregisterConnectionMonitor(monitor)
+                        }
                     }
                 }) { error: Throwable ->
                     eventListeners.forEach({ (listener, _) ->
@@ -385,10 +396,14 @@ class RemoteControl : LifecycleService() {
         super.onBind(intent)
         Log.d(tag, "Service bound")
         val disposable = callService.callsUpdates.subscribe { call ->
-            Log.i("RemoteControl", "Call state changed: ${call.callStatus}")
+            Log.i("RemoteControl", "Call state changed: ${call.callStatus}, callbacks: ${binder.callbacks}")
             binder.callbacks.forEach { callback ->
-                Log.i("RemoteControl", "Notifying callback: $callback")
-                callback.newCallState(call.callStatus.toString())
+                try {
+                    Log.i("RemoteControl", "Notifying callback: $callback")
+                    callback.newCallState(call.callStatus.toString())
+                } catch (e: RemoteException) {
+                    binder.callbacks.remove(callback)
+                }
             }
         }
         compositeDisposable.add(disposable)
