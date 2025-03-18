@@ -232,6 +232,7 @@ class RemoteControl : LifecycleService() {
                 Log.e(tag, "Error initiating call", e)
                 callback.onError(e.message)
             }
+            callback.onSuccess()
         }
 
         override fun registerCallStateCallback(callback: IRemoteService.StateCallback) {
@@ -397,14 +398,16 @@ class RemoteControl : LifecycleService() {
         Log.d(tag, "Service bound")
         val disposable = callService.callsUpdates.subscribe { call ->
             Log.i("RemoteControl", "Call state changed: ${call.callStatus}, callbacks: ${binder.callbacks}")
+            val toRemove = mutableListOf<IRemoteService.StateCallback>()
             binder.callbacks.forEach { callback ->
                 try {
-                    Log.i("RemoteControl", "Notifying callback: $callback")
+                    Log.d("RemoteControl", "Notifying callback: $callback")
                     callback.newCallState(call.callStatus.toString())
                 } catch (e: RemoteException) {
-                    binder.callbacks.remove(callback)
+                    toRemove.add(callback)
                 }
             }
+            binder.callbacks.removeAll(toRemove)
         }
         compositeDisposable.add(disposable)
         compositeDisposable.add(binder.compositeDisposable)
