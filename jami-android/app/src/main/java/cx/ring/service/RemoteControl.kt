@@ -86,15 +86,11 @@ class RemoteControl : LifecycleService() {
     override fun onCreate() {
         super.onCreate()
         eventService.subscribeToEvents(lifecycleScope) {
-            try {
-                eventListenersList.sendtoAll { listener ->
-                    listener.onEventReceived(
-                        it.name,
-                        it.data
-                    )
-                }
-            } catch (e: RemoteException) {
-                // listener dead, RemoteCallbackList will handle it
+            eventListenersList.sendtoAll { listener ->
+                listener.onEventReceived(
+                    it.name,
+                    it.data
+                )
             }
         }
         compositeDisposable.add(accountService.observableAccountList.subscribe { accounts = it })
@@ -412,12 +408,8 @@ class RemoteControl : LifecycleService() {
         val disposable = callService.callsUpdates.subscribe { call ->
             Log.i("RemoteControl", "Call state changed: ${call.callStatus}, callbacks: ${binder.callbacks}")
             binder.callbacks.sendtoAll { callback ->
-                try {
-                    Log.d("RemoteControl", "Notifying callback: $callback")
-                    callback.newCallState(call.callStatus.toString())
-                } catch (e: RemoteException) {
-                    // callback is dead, RemoteCallbackList will handle it
-                }
+                Log.d("RemoteControl", "Notifying callback: $callback")
+                callback.newCallState(call.callStatus.toString())
             }
         }
         compositeDisposable.add(disposable)
