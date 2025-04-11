@@ -68,4 +68,5 @@ interface IRemoteService {
     void removeConversationMember(String accountId, String conversationId, String contactUri);
     void sendMessage(String accountId, String conversationId, String message, String replyTo, int flag);
     void cycleAccount(String accountId);
+    void setEchoCancellationDelayOffsetMs(int delayOffsetMs);
 }

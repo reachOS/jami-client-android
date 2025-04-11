@@ -447,6 +447,11 @@ class RemoteControl : LifecycleService() {
                 Log.d(tag, "Call is active, not cycling account")
             }
         }
+
+        override fun setEchoCancellationDelayOffsetMs(delayOffsetMs: Int) {
+            Log.d(tag, "Setting echo cancellation delay offset to $delayOffsetMs ms")
+            hardwareService.setEchoCancellationDelayOffsetMs(delayOffsetMs)
+        }
     }
 
     override fun onBind(intent: Intent): IBinder {
