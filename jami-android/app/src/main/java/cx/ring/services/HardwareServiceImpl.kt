@@ -690,6 +690,10 @@ class HardwareServiceImpl(
             .apply()
     }
 
+    override fun setEchoCancellationDelayOffsetMs(delay: Int) {
+        JamiService.setEchoCancellationDelayOffsetMs(delay)
+    }
+
     companion object {
         private val VIDEO_SIZE_LOW = Size(480, 320)
         private val VIDEO_SIZE_SD = Size(720, 480)
