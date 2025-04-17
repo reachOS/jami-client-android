@@ -14,7 +14,7 @@ jobs:
       - name: Install dev stuff
         run: |
           sudo apt update
-          sudo apt install -y libc6-dev autopoint
+          sudo apt install -y libc6-dev autopoint meson
       - uses: actions/checkout@v4
       - name: Set git credentials store
         run: git config credential.helper store
